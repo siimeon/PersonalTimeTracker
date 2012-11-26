@@ -1,4 +1,4 @@
-<!DOCTYPE html>       
+<!DOCTYPE html>
 <html>
   <head>
     <meta charset='utf-8' />
@@ -13,7 +13,7 @@
     <script src='backbone.js' type='text/javascript'></script>
     <script src='backbone.localStorage.js' type='text/javascript'></script>
     <title>
-      Personal Time Tracker - Only test version
+      Personal Time Tracker - Test version
     </title>
     <style type='text/css'>
       /*<![CDATA[*/
@@ -55,15 +55,15 @@
             tagName: "li",
             events: {
               "blur [contenteditable]": "saveValues",
-              "click #end" : "endcon"
+              "click #end": "endtime"
             },
             initialize: function() { 
               this.model.bind('change', this.render, this);
               this.template = Templates.article;
-              this.e = new Date();
-              this.s = this.model.get('stime');
-              this.ss = new Date(parseInt(this.s.substr(6)));
-              
+              this.end = new Date();                            //End time object
+              this.ends = new Date().getTime();                 //End timestamp
+              this.stis = this.model.get('stimes');             //Get start timestamp
+              this.dif =  Math.round((((this.ends - this.stis)/1000)/60)*100)/100;   //Counting timedifference between start and stop (minute) (rounded to 2 decimal)
             },
             render: function() { 
               $(this.el).html( this.template(this.model.toJSON()) ); 
@@ -75,11 +75,12 @@
                 content: this.$("[data-name='content']").html()
               },{silent: true});
             },
-            endcon: function()	{
-            	this.model.save({
-            		etime: this.e,
-            		diftime: this.ss
-            	});
+            endtime: function() {
+              this.model.save({
+                etime: this.end,
+                etimes: this.ends,
+                dif: this.dif
+              });
             }        
           });
           
@@ -113,10 +114,12 @@
             initialize: function() {
               this.title = this.$("#title");
               this.content = this.$("#content");
-              this.n = new Date();
-			  
+              
             },
             createNew: function() {
+              this.time = new Date();             //Get new time objetive
+              this.tist = new Date().getTime();    //Get Timestamp in milliseconds
+              
               this.$(".invalid").removeClass("invalid");
               if (this.$(":invalid").length) {
                 this.$(":invalid").addClass("invalid");
@@ -127,9 +130,11 @@
                 content: this.content.val(),
                 email: localStorage.email,
                 name: localStorage.name,
-                stime: this.n,
-                etime: this.n,
-                diftime: 0
+                stime: this.time,         //Start Time Object
+                etime: 0,                 //Place for end time object
+                stimes: this.tist,        //Start Timestamp
+                etimes: 0,                //Place for end timestamp
+                dif: 0                    //Place for timestamp difference
               }, {at: 0});
               this.title.val("");
               this.content.val("");
@@ -186,23 +191,25 @@
         {{timestamp}}
       </p>
       <h3 contenteditable='true' data-id='{{id}}' data-name='title'>
-        {{title}}
+        {{title}} 
       </h3>
-      <p contenteditable='true' data-id='{{id}}' data-name'name'>
-      	{{name}}
+      <p data-id='{{id}}' data-name='stime'>
+        <strong>
+          Start: {{stime}}
+        </strong>
       </p>
+      <p data-id='{{id}}' data-name='etime' >
+        <strong>
+          End: {{etime}}
+        </strong>
+      </p>
+      <p data-id='{{id}}' data-name='dif'>
+        Difference : {{dif}} Minute
+      <p>
       <p contenteditable='true' data-id='{{id}}' data-name='content'>
         {{content}}
       </p>
-      <p  data-id='{{id}}' data-name='stime'>
-        Start: {{stime}}
-      </p>
-      <p data-id='{{id}}' data-name='etime' id='end'>
-        End: {{etime}}
-      </p>
-      <p data-id='{{id}}' data-name='diftime'>
-        Total: {{diftime}}
-      </p>
+      <button id='end'> End Task</button>
     </script>
     <div data-role='page' id='home'>
       <div data-role='header'>

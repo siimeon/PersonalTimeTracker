@@ -60,7 +60,10 @@
             initialize: function() { 
               this.model.bind('change', this.render, this);
               this.template = Templates.article;
-              this.end = new Date();  
+              this.end = new Date();                            //End time object
+              this.ends = new Date().getTime();                 //End timestamp
+              this.stis = this.model.get('stimes');             //Get start timestamp
+              this.dif = ((this.ends - this.stis)/1000);        //Counting timedifference between start and stop (second)
             },
             render: function() { 
               $(this.el).html( this.template(this.model.toJSON()) ); 
@@ -74,7 +77,9 @@
             },
             endtime: function() {
               this.model.save({
-                etime: this.end
+                etime: this.end,
+                etimes: this.ends,
+                dif: this.dif
               });
             }        
           });
@@ -109,7 +114,8 @@
             initialize: function() {
               this.title = this.$("#title");
               this.content = this.$("#content");
-              this.time = new Date();
+              this.time = new Date();             //Get new time objetive
+              this.tist = new Date().getTime();    //Get Timestamp in milliseconds
             },
             createNew: function() {
               this.$(".invalid").removeClass("invalid");
@@ -122,9 +128,11 @@
                 content: this.content.val(),
                 email: localStorage.email,
                 name: localStorage.name,
-                stime: this.time,
-                etime: this.time,
-                dif: 0
+                stime: this.time,         //Start Time Object
+                etime: 0,                 //Place for end time object
+                stimes: this.tist,        //Start Timestamp
+                etimes: 0,                //Place for end timestamp
+                dif: 0                    //Place for timestamp difference
               }, {at: 0});
               this.title.val("");
               this.content.val("");
@@ -193,6 +201,9 @@
           End: {{etime}}
         </strong>
       </p>
+      <p data-id='{{id}}' data-name='dif'>
+        Difference : {{dif}} second
+      <p>
       <p contenteditable='true' data-id='{{id}}' data-name='content'>
         {{content}}
       </p>
